@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { calculateBayesianA_B, VariantData, BayesianResult } from "@/lib/bayesian";
 
 export default function Home() {
@@ -11,7 +12,6 @@ export default function Home() {
 
   const handleCalculate = () => {
     setIsCalculating(true);
-    // Slight timeout just for a smooth UI loading feel
     setTimeout(() => {
       const calc = calculateBayesianA_B(variantA, variantB);
       setResult(calc);
@@ -19,63 +19,84 @@ export default function Home() {
     }, 400);
   };
 
+  const fadeUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-sans selection:bg-red-500/30">
       
       {/* Navigation */}
-      <nav className="border-b border-white/10 px-8 py-5 flex justify-between items-center bg-black/50 backdrop-blur-md sticky top-0 z-50">
+      <nav className="border-b border-white/5 px-8 py-5 flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-red-600 rounded-sm"></div>
           <span className="text-xl font-bold tracking-wider text-white">TRUELIFT</span>
         </div>
-        <div className="text-sm font-medium text-gray-400 hover:text-white transition-colors cursor-pointer">
-          Our Methodology
+        <div className="hidden md:flex gap-8 text-xs font-bold tracking-widest text-gray-500 uppercase">
+          <a href="#hero" className="hover:text-white transition-colors">Engine</a>
+          <a href="#problem" className="hover:text-white transition-colors">The Flaw</a>
+          <a href="#how-it-works" className="hover:text-white transition-colors">Methodology</a>
+          <a href="#cta" className="text-red-500 hover:text-red-400 transition-colors">Access</a>
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-20 lg:py-32 grid lg:grid-cols-2 gap-16 items-start">
+      {/* 1. Hero & Calculator Section */}
+      <section id="hero" className="max-w-6xl mx-auto px-6 py-20 lg:py-32 grid lg:grid-cols-2 gap-16 items-start">
         
         {/* Left Column: Hero Copy */}
-        <div className="space-y-8">
-          <div className="inline-flex items-center gap-2 border border-red-500/30 bg-red-500/10 px-3 py-1 rounded-full text-xs font-semibold tracking-widest text-red-400 uppercase">
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="space-y-8"
+        >
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 border border-red-500/30 bg-red-500/10 px-3 py-1 rounded-full text-xs font-semibold tracking-widest text-red-500 uppercase">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
             </span>
             Bayesian Engine Live
-          </div>
+          </motion.div>
           
-          <h1 className="text-5xl lg:text-7xl font-extrabold text-white leading-[1.05] tracking-tight">
+          <motion.h1 variants={fadeUp} className="text-5xl lg:text-7xl font-extrabold text-white leading-[1.05] tracking-tight">
             Stop guessing.<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">
               Prove the lift.
             </span>
-          </h1>
+          </motion.h1>
           
-          <p className="text-lg text-gray-400 leading-relaxed max-w-lg">
+          <motion.p variants={fadeUp} className="text-lg text-gray-400 leading-relaxed max-w-lg">
             Traditional tools stop at flawed p-values. TrueLift runs concurrent randomized 
             holdouts and calculates actual expected loss, so you only roll out features 
             that mathematically guarantee revenue.
-          </p>
+          </motion.p>
 
-          <div className="pt-4 border-t border-white/10">
-             <div className="flex items-center gap-4 text-sm text-gray-500">
+          <motion.div variants={fadeUp} className="pt-4 border-t border-white/10">
+             <div className="flex items-center gap-6 text-sm text-gray-500">
                 <span className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  Peeking-safe
+                  <span className="text-red-500">✓</span> Peeking-safe
                 </span>
                 <span className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  Risk modeled
+                  <span className="text-red-500">✓</span> Risk modeled
                 </span>
              </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Right Column: The Calculator */}
-        <div className="bg-[#111] border border-white/5 rounded-2xl p-8 lg:p-10 shadow-2xl relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute -top-32 -right-32 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full pointer-events-none"></div>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="bg-[#111] border border-white/5 rounded-2xl p-8 lg:p-10 shadow-2xl relative overflow-hidden"
+        >
+          <div className="absolute -top-32 -right-32 w-64 h-64 bg-red-600/10 blur-[100px] rounded-full pointer-events-none"></div>
 
           <div className="mb-8 flex items-center justify-between">
              <h2 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Test Input</h2>
@@ -83,7 +104,6 @@ export default function Home() {
           </div>
 
           <div className="space-y-6 relative z-10">
-            {/* Control Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-gray-400 mb-2">Control Visitors</label>
@@ -105,7 +125,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Test Variant Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-gray-400 mb-2">Test Visitors</label>
@@ -132,17 +151,16 @@ export default function Home() {
               disabled={isCalculating}
               className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-lg mt-4 transition-all uppercase tracking-widest text-sm flex justify-center items-center gap-2"
             >
-              {isCalculating ? (
-                <span className="animate-pulse">Simulating...</span>
-              ) : (
-                "Run Bayesian Analysis"
-              )}
+              {isCalculating ? <span className="animate-pulse">Simulating...</span> : "Run Bayesian Analysis"}
             </button>
           </div>
 
-          {/* Results Block */}
           {result && (
-            <div className="mt-8 pt-8 border-t border-white/10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 pt-8 border-t border-white/10"
+            >
               <div className="flex justify-between items-end mb-6">
                 <h3 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Analysis Output</h3>
               </div>
@@ -164,32 +182,141 @@ export default function Home() {
                     <div className="text-xl font-mono text-gray-300">{(result.expectedLossA * 100).toFixed(2)}%</div>
                  </div>
               </div>
-              
-              {/* Intelligent Recommendation */}
-              <div className="mt-6 border-l-2 border-red-500 pl-4 py-1">
-                <p className="text-sm text-gray-400">
-                  <span className="text-white font-bold block mb-1">Verdict:</span>
-                  {result.probBBeatsA > 0.95 
-                    ? "The test variant is mathematically superior. Deploy with confidence; downside risk is negligible."
-                    : result.probBBeatsA < 0.05 
-                    ? "The test variant is underperforming. Cease rollout to prevent further revenue leakage."
-                    : "Statistical significance not met. Incremental lift is currently unproven. Let the holdout continue."}
-                </p>
-              </div>
-            </div>
+            </motion.div>
           )}
-        </div>
-      </main>
+        </motion.div>
+      </section>
+
+      {/* 2. The Problem Section */}
+      <section id="problem" className="bg-[#eae8e1] text-gray-900 py-32 mt-20">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="max-w-6xl mx-auto px-6"
+        >
+          <div className="flex flex-col lg:flex-row gap-16">
+            <div className="flex-1 space-y-6">
+              <motion.h4 variants={fadeUp} className="text-xs font-bold tracking-widest text-red-600 uppercase">The Flaw</motion.h4>
+              <motion.h2 variants={fadeUp} className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-none text-black">
+                Most A/B Tests are lying to you.
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                Revenue leaks quietly when product managers pause tests exactly when they cross a magical "95% significance" line, creating massive false positives.
+              </motion.p>
+            </div>
+            
+            <div className="flex-1 space-y-12 pt-12 lg:pt-0">
+              <motion.div variants={fadeUp} className="border-t border-gray-300 pt-6">
+                <div className="flex gap-6">
+                  <span className="text-2xl font-black text-red-600">01</span>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">The Peeking Problem</h3>
+                    <p className="text-gray-600">Checking a test everyday guarantees you will eventually see a false positive. You end up shipping features that actually lose money.</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div variants={fadeUp} className="border-t border-gray-300 pt-6">
+                <div className="flex gap-6">
+                  <span className="text-2xl font-black text-red-600">02</span>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">P-Values are unreadable</h3>
+                    <p className="text-gray-600">Your CFO doesn't care about the null hypothesis. They care about expected financial risk if a rollout goes wrong.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* 3. Methodology / How we work */}
+      <section id="how-it-works" className="py-32 bg-black border-y border-white/5">
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="max-w-6xl mx-auto px-6"
+        >
+          <motion.h4 variants={fadeUp} className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-4">Methodology</motion.h4>
+          <motion.h2 variants={fadeUp} className="text-4xl lg:text-6xl font-extrabold tracking-tight text-white mb-20">
+            Model. Simulate. Rollout.
+          </motion.h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <motion.div variants={fadeUp} className="border border-white/10 bg-[#111] p-8 rounded-xl hover:border-red-500/50 transition-colors">
+              <div className="text-5xl font-black text-white/5 mb-6">01</div>
+              <h3 className="text-xl font-bold text-white mb-2">Beta Distribution</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                We model your conversions as a Beta Distribution, continuously updating our priors to match reality as new data arrives.
+              </p>
+            </motion.div>
+            <motion.div variants={fadeUp} className="border border-white/10 bg-[#111] p-8 rounded-xl hover:border-red-500/50 transition-colors">
+              <div className="text-5xl font-black text-white/5 mb-6">02</div>
+              <h3 className="text-xl font-bold text-white mb-2">Monte Carlo Simulation</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                By drawing 100,000 samples from the distributions, we simulate alternate realities to discover how frequently your variant wins.
+              </p>
+            </motion.div>
+            <motion.div variants={fadeUp} className="border border-white/10 bg-[#111] p-8 rounded-xl hover:border-red-500/50 transition-colors">
+              <div className="text-5xl font-black text-white/5 mb-6">03</div>
+              <h3 className="text-xl font-bold text-white mb-2">Expected Loss</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                We calculate exactly how much money you stand to lose if you force a rollout on a losing variant, giving you financial precision.
+              </p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* 4. CTA Profile */}
+      <section id="cta" className="bg-red-600 text-black py-32 overflow-hidden relative">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 relative z-10"
+        >
+          <div>
+            <motion.h4 variants={fadeUp} className="text-xs font-bold tracking-widest uppercase mb-4 opacity-80">Enterprise Pilot</motion.h4>
+            <motion.h2 variants={fadeUp} className="text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1] mb-6">
+              Start scaling with certainty.
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-lg font-medium opacity-90 max-w-sm mb-8">
+              Integrate TrueLift via API directly into your growth stack. Free during our exclusive design partner phase.
+            </motion.p>
+            <motion.button variants={fadeUp} className="bg-black text-white hover:bg-gray-900 px-8 py-4 rounded-none font-bold tracking-widest uppercase text-sm transition-transform hover:-translate-y-1">
+              Become a Partner →
+            </motion.button>
+          </div>
+          
+          <motion.div variants={fadeUp} className="border-l border-black/20 pl-8 space-y-8">
+            <div>
+              <h4 className="font-bold text-lg mb-1">What you get</h4>
+              <p className="opacity-80">Full API access, dedicated Slack channel, and custom dashboard integrations.</p>
+            </div>
+            <div className="border-t border-black/10 pt-8">
+              <h4 className="font-bold text-lg mb-1">What we ask</h4>
+              <p className="opacity-80">Feedback on the API speed, and a case study if we successfully prevent a massive loss.</p>
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 mt-20">
-        <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+      <footer className="bg-black py-12 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
            <div className="flex items-center gap-2">
              <div className="w-3 h-3 bg-red-600 rounded-sm"></div>
              <span className="text-sm font-bold tracking-wider text-white">TRUELIFT</span>
            </div>
            <div className="text-xs text-gray-600">
-              Inspired design. Powered by Bayesian Inference. 
+              © 2026 TrueLift Analytics. All rights reserved. 
            </div>
         </div>
       </footer>
