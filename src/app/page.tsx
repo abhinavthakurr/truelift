@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { calculateBayesianA_B, VariantData, BayesianResult } from "@/lib/bayesian";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { jStat } from "jstat";
 
 export default function Home() {
   const [variantA, setVariantA] = useState<VariantData>({ name: "Control", visitors: 1000, conversions: 50 });
@@ -18,6 +20,39 @@ export default function Home() {
       setIsCalculating(false);
     }, 400);
   };
+
+  const chartData = useMemo(() => {
+    if (!result) return [];
+    
+    // Calculate distributions for the chart
+    const alphaA = 1 + variantA.conversions;
+    const betaA = 1 + variantA.visitors - variantA.conversions;
+    const alphaB = 1 + variantB.conversions;
+    const betaB = 1 + variantB.visitors - variantB.conversions;
+
+    // Find a reasonable range to plot based on the means
+    const meanA = alphaA / (alphaA + betaA);
+    const meanB = alphaB / (alphaB + betaB);
+    const spread = Math.max(
+      Math.sqrt((alphaA * betaA) / (Math.pow(alphaA + betaA, 2) * (alphaA + betaA + 1))),
+      Math.sqrt((alphaB * betaB) / (Math.pow(alphaB + betaB, 2) * (alphaB + betaB + 1)))
+    );
+
+    const minX = Math.max(0, Math.min(meanA, meanB) - spread * 4);
+    const maxX = Math.min(1, Math.max(meanA, meanB) + spread * 4);
+    const step = (maxX - minX) / 100;
+
+    const data = [];
+    for (let x = minX; x <= maxX; x += step) {
+      data.push({
+        x: (x * 100).toFixed(2) + "%", // Format as percentage
+        rawX: x,
+        Control: jStat.beta.pdf(x, alphaA, betaA),
+        Test: jStat.beta.pdf(x, alphaB, betaB)
+      });
+    }
+    return data;
+  }, [result, variantA, variantB]);
 
   const fadeUp = {
     hidden: { opacity: 0, y: 40 },
@@ -165,21 +200,42 @@ export default function Home() {
                 <h3 className="text-sm font-bold tracking-widest text-gray-500 uppercase">Analysis Output</h3>
               </div>
 
-              <div className="bg-[#0a0a0a] rounded-xl border border-white/5 p-6 mb-4">
-                <div className="text-xs text-gray-500 uppercase tracking-widest mb-2">Probability Test Wins</div>
-                <div className="text-5xl font-light font-mono text-white">
-                  {(result.probBBeatsA * 100).toFixed(1)}<span className="text-2xl text-red-500">%</span>
-                </div>
+              {/* The Graph */}
+              <div className="h-48 w-full mb-6">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorTest" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="colorControl" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#525252" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#525252" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="x" stroke="#333" fontSize={10} tickMargin={8} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#111', borderColor: '#333', borderRadius: '8px' }}
+                      itemStyle={{ fontSize: '12px' }}
+                      labelStyle={{ color: '#888', marginBottom: '4px' }}
+                    />
+                    <Area type="monotone" dataKey="Control" stroke="#525252" fillOpacity={1} fill="url(#colorControl)" />
+                    <Area type="monotone" dataKey="Test" stroke="#ef4444" fillOpacity={1} fill="url(#colorTest)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-[#1a1a1a] p-4 rounded-lg border border-white/5">
-                    <div className="text-xs text-gray-500 mb-1">Risk if choose Test</div>
-                    <div className="text-xl font-mono text-gray-300">{(result.expectedLossB * 100).toFixed(2)}%</div>
+                 <div className="bg-[#1a1a1a] p-4 rounded-lg border border-white/5 relative overflow-hidden">
+                    <div className="absolute right-0 top-0 h-full w-1 bg-red-600/50"></div>
+                    <div className="text-xs text-gray-500 mb-1 tracking-widest uppercase">Test Win Prob</div>
+                    <div className="text-2xl font-mono text-white">{(result.probBBeatsA * 100).toFixed(1)}%</div>
                  </div>
-                 <div className="bg-[#1a1a1a] p-4 rounded-lg border border-white/5">
-                    <div className="text-xs text-gray-500 mb-1">Risk if choose Control</div>
-                    <div className="text-xl font-mono text-gray-300">{(result.expectedLossA * 100).toFixed(2)}%</div>
+                 <div className="bg-[#1a1a1a] p-4 rounded-lg border border-white/5 relative overflow-hidden">
+                    <div className="absolute right-0 top-0 h-full w-1 bg-gray-600/50"></div>
+                    <div className="text-xs text-gray-500 mb-1 tracking-widest uppercase">Expected Risk</div>
+                    <div className="text-2xl font-mono text-gray-300">{(result.expectedLossB * 100).toFixed(2)}%</div>
                  </div>
               </div>
             </motion.div>
