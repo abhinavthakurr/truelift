@@ -2,6 +2,7 @@ declare module "jstat" {
   export const jStat: {
     beta: {
       sample(alpha: number, beta: number): number;
+      pdf(x: number, alpha: number, beta: number): number;
     };
   };
 }
