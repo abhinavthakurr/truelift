@@ -1,69 +1,137 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { calculateBayesianA_B, VariantData, BayesianResult } from "@/lib/bayesian";
 
 export default function Home() {
+  const [variantA, setVariantA] = useState<VariantData>({ name: "Variant A", visitors: 1000, conversions: 50 });
+  const [variantB, setVariantB] = useState<VariantData>({ name: "Variant B", visitors: 1000, conversions: 65 });
+  const [result, setResult] = useState<BayesianResult | null>(null);
+
+  const handleCalculate = () => {
+    // Run the Monte Carlo simulation (100,000 iterations is fast enough for the browser)
+    const calc = calculateBayesianA_B(variantA, variantB);
+    setResult(calc);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
+      <div className="max-w-4xl w-full">
+        
+        <header className="mb-10 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">TrueLift Experiment Engine</h1>
+          <p className="text-lg text-gray-600">Peeking-safe Bayesian A/B testing calculator.</p>
+        </header>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Variant A Card */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Control (A)</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Visitors</label>
+                <input 
+                  type="number" 
+                  value={variantA.visitors}
+                  onChange={(e) => setVariantA({...variantA, visitors: parseInt(e.target.value) || 0})}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Conversions</label>
+                <input 
+                  type="number" 
+                  value={variantA.conversions}
+                  onChange={(e) => setVariantA({...variantA, conversions: parseInt(e.target.value) || 0})}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black"
+                />
+              </div>
+              <div className="pt-2 text-sm text-gray-500 font-medium">
+                Conversion Rate: {((variantA.conversions / variantA.visitors || 0) * 100).toFixed(2)}%
+              </div>
+            </div>
+          </div>
+
+          {/* Variant B Card */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 className="text-xl font-semibold mb-4 text-green-700">Variant (B)</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Visitors</label>
+                <input 
+                  type="number" 
+                  value={variantB.visitors}
+                  onChange={(e) => setVariantB({...variantB, visitors: parseInt(e.target.value) || 0})}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Conversions</label>
+                <input 
+                  type="number" 
+                  value={variantB.conversions}
+                  onChange={(e) => setVariantB({...variantB, conversions: parseInt(e.target.value) || 0})}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
+                />
+              </div>
+              <div className="pt-2 text-sm text-gray-500 font-medium">
+                Conversion Rate: {((variantB.conversions / variantB.visitors || 0) * 100).toFixed(2)}%
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="text-center mb-10">
+          <button 
+            onClick={handleCalculate}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Run Bayesian Analysis
+          </button>
         </div>
-      </main>
-    </div>
+
+        {/* Results Section */}
+        {result && (
+          <div className="bg-gray-900 text-white p-8 rounded-2xl shadow-xl animate-fade-in-up">
+            <h3 className="text-2xl font-bold mb-6 border-b border-gray-700 pb-4">Analysis Results</h3>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-gray-800 p-6 rounded-xl">
+                <div className="text-sm text-gray-400 mb-1">Probability B is better</div>
+                <div className={`text-4xl font-bold ${result.probBBeatsA > 0.95 ? 'text-green-400' : 'text-yellow-400'}`}>
+                  {(result.probBBeatsA * 100).toFixed(1)}%
+                </div>
+              </div>
+              
+              <div className="bg-gray-800 p-6 rounded-xl">
+                <div className="text-sm text-gray-400 mb-1">Risk of choosing B</div>
+                <div className="text-2xl font-semibold text-red-400">
+                  -{(result.expectedLossB * 100).toFixed(2)}%
+                </div>
+                <div className="text-xs text-gray-500 mt-2">Conversion drop if wrong</div>
+              </div>
+
+              <div className="bg-gray-800 p-6 rounded-xl">
+                <div className="text-sm text-gray-400 mb-1">Risk of choosing A</div>
+                <div className="text-2xl font-semibold text-orange-400">
+                  -{(result.expectedLossA * 100).toFixed(2)}%
+                </div>
+                <div className="text-xs text-gray-500 mt-2">Missed uplift if wrong</div>
+              </div>
+            </div>
+            
+            <div className="mt-6 text-gray-300 text-sm bg-gray-800 p-4 rounded-lg">
+              <strong>Recommendation: </strong> 
+              {result.probBBeatsA > 0.95 
+                ? "Variant B is a clear winner. You can confidently deploy this knowing the risk is negligible."
+                : result.probBBeatsA < 0.05 
+                ? "Variant A is solidly beating Variant B. Do not roll out Variant B."
+                : "The results are not yet conclusive. Rolling out B carries statistical risk. Let the test continue running."}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </main>
   );
 }
