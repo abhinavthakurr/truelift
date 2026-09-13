@@ -24,5 +24,11 @@
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "framer-motion": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
